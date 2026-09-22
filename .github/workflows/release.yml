@@ -1,0 +1,59 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: lx2al.exe
+          - os: ubuntu-latest
+            artifact: lx2al
+          - os: macos-latest
+            artifact: lx2al
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build deps
+        run: python -m pip install -U pip pyinstaller
+
+      - name: Build executable
+        run: pyinstaller --onefile --name lx2al --clean -y entry.py
+
+      - name: Stage artifact
+        shell: bash
+        run: |
+          mkdir -p dist_out
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            cp dist/lx2al.exe dist_out/lx2al-windows-amd64.exe
+          elif [ "${{ runner.os }}" = "macOS" ]; then
+            cp dist/lx2al dist_out/lx2al-macos
+          else
+            cp dist/lx2al dist_out/lx2al-linux-x86_64
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lx2al-${{ runner.os }}
+          path: dist_out/*
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist_out/*
+          generate_release_notes: true
