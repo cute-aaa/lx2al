@@ -8,17 +8,48 @@
 
 [lx-music-desktop](https://github.com/lyswhut/lx-music-desktop) 与 [any-listen](https://github.com/any-listen/any-listen) 都能管理本地歌单，但备份格式不同。本工具把 lx-music 的歌单迁移到 any-listen，无需手动重录。
 
-## 安装
+## 快速上手（Windows exe）
 
-### Windows（无需 Python）
+### 1. 从 lx-music 导出歌单
 
-到 [Releases](https://github.com/cute-aaa/lx2al/releases) 下载 `lx2al-windows-amd64.exe` 直接运行：
+打开 **lx-music → 设置（齿轮）→ 备份与恢复**，任选其一导出：
+
+- **导出列表**：只导出歌单（试听列表 / 我的收藏 / 用户列表），得到 `lx_list.lxmc`
+- **导出**（所有数据）：导出歌单 + 设置，得到 `lx_datas_v2.lxmc`
+
+![lx-music 导出步骤：设置 → 备份与恢复 → 导出](docs/lx-export-steps.png)
+
+![可选「导出列表」或「导出」，二者皆可](docs/lx-export-buttons.png)
+
+### 2. 用 exe 转换
+
+到 [Releases](https://github.com/cute-aaa/lx2al/releases) 下载 `lx2al-windows-amd64.exe`，无需安装 Python：
 
 ```bat
+:: 完整备份转换
 lx2al-windows-amd64.exe G:\Download\lx_datas_v2.lxmc -o G:\Download\any-listen.converted.alcfg
+
+:: 仅歌单备份同样支持
+lx2al-windows-amd64.exe G:\Download\lx_list.lxmc -o G:\Download\any-listen.converted.alcfg
+
+:: 先看统计、不写文件
+lx2al-windows-amd64.exe G:\Download\lx_datas_v2.lxmc --dry-run
+
+:: 输出明文 JSON（便于检查）
+lx2al-windows-amd64.exe G:\Download\lx_datas_v2.lxmc --json --pretty -o out.json
 ```
 
-### 从源码安装
+把 exe 放到任意目录即可运行；路径含空格时请加引号：
+
+```bat
+lx2al-windows-amd64.exe "D:\我的备份\lx_datas_v2.lxmc" -o "D:\我的备份\any-listen.alcfg"
+```
+
+### 3. 导入 any-listen
+
+打开 **any-listen → 设置 → 备份与恢复 → 恢复数据**，选择生成的 `.alcfg`。
+
+## 安装（源码）
 
 ```bash
 python -m pip install -e .
@@ -27,7 +58,13 @@ python -m pip install -e .
 python -m lxmc2alcfg --help
 ```
 
-需要 Python 3.10+。
+需要 Python 3.10+。等价命令行：
+
+```bash
+python -m lxmc2alcfg G:/Download/lx_datas_v2.lxmc -o G:/Download/any-listen.converted.alcfg
+python -m lxmc2alcfg lx_datas_v2.lxmc --dry-run
+python -m lxmc2alcfg lx_datas_v2.lxmc --json --pretty -o out.json
+```
 
 ### 自行打包 exe
 
@@ -35,21 +72,6 @@ python -m lxmc2alcfg --help
 powershell -File build_exe.ps1
 # 输出: dist/lx2al.exe
 ```
-
-## 用法
-
-```bash
-# 完整备份转换
-python -m lxmc2alcfg G:/Download/lx_datas_v2.lxmc -o G:/Download/any-listen.converted.alcfg
-
-# 只看统计，不写文件
-python -m lxmc2alcfg lx_datas_v2.lxmc --dry-run
-
-# 输出明文 JSON
-python -m lxmc2alcfg lx_datas_v2.lxmc --json --pretty -o out.json
-```
-
-然后在 any-listen 中：**设置 → 备份 → 导入** 生成的 `.alcfg`。
 
 ## 支持的 lx-music 输入
 
